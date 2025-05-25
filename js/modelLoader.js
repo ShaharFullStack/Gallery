@@ -9,7 +9,7 @@ export class ModelLoader {
         this.loader = new GLTFLoader();
         this.modelStates = {};
         this.activeModelId = null;
-        this.modelXOffset = 6; // Increased from 4 to 6 for more side positioning
+        this.modelXOffset = 6;
         this.totalModels = 0;
         
         // Animation mixers for animated models
@@ -39,12 +39,148 @@ export class ModelLoader {
             height: 8,
             targetOffset: new THREE.Vector3(0, 0, 0)
         };
+        
+        // Manual rotation configuration
+        this.manualRotation = {
+            enabled: true,
+            sensitivity: 0.05,
+            dampening: 0.95,
+            maxSpeed: 0.05,
+            isDragging: false,
+            lastMouseX: 0,
+            lastMouseY: 0,
+            velocityX: 0,
+            velocityY: 0,
+            targetRotationX: 0,
+            targetRotationY: 0,
+            currentRotationX: 0,
+            currentRotationY: 0,
+            rotateActiveOnly: true  // Only rotate active model
+        };
+        
+        // Setup manual rotation controls
+        this.setupManualRotation();
+        
+        console.log("ModelLoader initialized with manual rotation (zoom disabled)");
+    }
+
+    setupManualRotation() {
+        const canvas = this.renderer.domElement;
+        
+        // Store bound functions for removal later
+        this.boundMouseDown = this.onMouseDown.bind(this);
+        this.boundMouseMove = this.onMouseMove.bind(this);
+        this.boundMouseUp = this.onMouseUp.bind(this);
+        this.boundMouseLeave = this.onMouseLeave.bind(this);
+        this.boundTouchStart = this.onTouchStart.bind(this);
+        this.boundTouchMove = this.onTouchMove.bind(this);
+        this.boundTouchEnd = this.onTouchEnd.bind(this);
+        this.boundContextMenu = this.onContextMenu.bind(this);
+        
+        // Add event listeners
+        canvas.addEventListener('mousedown', this.boundMouseDown);
+        canvas.addEventListener('mousemove', this.boundMouseMove);
+        canvas.addEventListener('mouseup', this.boundMouseUp);
+        canvas.addEventListener('mouseleave', this.boundMouseLeave);
+        canvas.addEventListener('touchstart', this.boundTouchStart, { passive: false });
+        canvas.addEventListener('touchmove', this.boundTouchMove, { passive: false });
+        canvas.addEventListener('touchend', this.boundTouchEnd, { passive: false });
+        canvas.addEventListener('contextmenu', this.boundContextMenu);
+        
+        // Set initial cursor
+        canvas.style.cursor = 'grab';
+        
+        console.log("Manual rotation event listeners added");
+    }
+
+    onMouseDown(event) {
+        if (!this.manualRotation.enabled || event.button !== 0) return;
+        
+        this.manualRotation.isDragging = true;
+        this.manualRotation.lastMouseX = event.clientX;
+        this.manualRotation.lastMouseY = event.clientY;
+        this.manualRotation.velocityX = 0;
+        this.manualRotation.velocityY = 0;
+        
+        this.renderer.domElement.style.cursor = 'grabbing';
+        console.log("Manual rotation started");
+    }
+
+    onMouseMove(event) {
+        if (!this.manualRotation.enabled || !this.manualRotation.isDragging) return;
+        
+        const deltaX = event.clientX - this.manualRotation.lastMouseX;
+        const deltaY = event.clientY - this.manualRotation.lastMouseY;
+        
+        this.manualRotation.velocityX = deltaX * this.manualRotation.sensitivity;
+        this.manualRotation.velocityY = deltaY * this.manualRotation.sensitivity;
+        
+        // Clamp velocity
+        this.manualRotation.velocityX = Math.max(-this.manualRotation.maxSpeed, 
+            Math.min(this.manualRotation.maxSpeed, this.manualRotation.velocityX));
+        this.manualRotation.velocityY = Math.max(-this.manualRotation.maxSpeed, 
+            Math.min(this.manualRotation.maxSpeed, this.manualRotation.velocityY));
+        
+        this.manualRotation.lastMouseX = event.clientX;
+        this.manualRotation.lastMouseY = event.clientY;
+    }
+
+    onMouseUp(event) {
+        if (!this.manualRotation.enabled) return;
+        
+        this.manualRotation.isDragging = false;
+        this.renderer.domElement.style.cursor = 'grab';
+        console.log("Manual rotation ended");
+    }
+
+    onMouseLeave(event) {
+        if (!this.manualRotation.enabled) return;
+        
+        this.manualRotation.isDragging = false;
+        this.renderer.domElement.style.cursor = 'default';
+    }
+
+    onTouchStart(event) {
+        if (!this.manualRotation.enabled || event.touches.length !== 1) return;
+        
+        event.preventDefault();
+        const touch = event.touches[0];
+        this.manualRotation.isDragging = true;
+        this.manualRotation.lastMouseX = touch.clientX;
+        this.manualRotation.lastMouseY = touch.clientY;
+        this.manualRotation.velocityX = 0;
+        this.manualRotation.velocityY = 0;
+    }
+
+    onTouchMove(event) {
+        if (!this.manualRotation.enabled || !this.manualRotation.isDragging || event.touches.length !== 1) return;
+        
+        event.preventDefault();
+        const touch = event.touches[0];
+        const deltaX = touch.clientX - this.manualRotation.lastMouseX;
+        const deltaY = touch.clientY - this.manualRotation.lastMouseY;
+        
+        this.manualRotation.velocityX = deltaX * this.manualRotation.sensitivity;
+        this.manualRotation.velocityY = deltaY * this.manualRotation.sensitivity;
+        
+        this.manualRotation.lastMouseX = touch.clientX;
+        this.manualRotation.lastMouseY = touch.clientY;
+    }
+
+    onTouchEnd(event) {
+        if (!this.manualRotation.enabled) return;
+        
+        event.preventDefault();
+        this.manualRotation.isDragging = false;
+    }
+
+    onContextMenu(event) {
+        event.preventDefault();
     }
 
     calculateSceneLayout(totalModels) {
         this.totalModels = totalModels;
         
-        // Dynamic offset based on number of models
         if (totalModels <= 3) {
             this.modelXOffset = 6;
             this.sceneConfig.scaleMultiplier = 1.0;
@@ -67,26 +203,20 @@ export class ModelLoader {
         const isContentOnLeft = (index % 2) === 0;
         
         if (isMobile) {
-            // On mobile, slight offset but mostly centered
             return isContentOnLeft ? -this.modelXOffset * 0.3 : this.modelXOffset * 0.3;
         } else {
-            // On desktop, full side positioning - opposite to content
             return isContentOnLeft ? this.modelXOffset : -this.modelXOffset;
         }
     }
 
     calculateModelScale(originalScale, index) {
-        // Apply scene scale multiplier
         const baseScale = originalScale.clone().multiplyScalar(this.sceneConfig.scaleMultiplier);
-        
-        // Add slight variation for visual interest
-        const variation = 0.9 + (Math.sin(index * 1.234) * 0.2); // Varies between 0.7 and 1.1
+        const variation = 0.9 + (Math.sin(index * 1.234) * 0.2);
         return baseScale.multiplyScalar(variation);
     }
 
     async loadModel(item, index) {
         return new Promise((resolve, reject) => {
-            // Initialize model state
             this.modelStates[item.id] = {
                 modelObject: null,
                 targetOpacity: index === 0 ? 1 : 0,
@@ -95,7 +225,15 @@ export class ModelLoader {
                 targetX: 0,
                 currentX: 0,
                 scale: new THREE.Vector3(...item.modelScale),
-                mixer: null
+                mixer: null,
+                // Manual rotation state
+                manualRotation: {
+                    rotationX: 0,
+                    rotationY: 0,
+                    baseRotationX: (Math.random() - 0.5) * 0.2,
+                    baseRotationY: Math.random() * Math.PI * 2,
+                    baseRotationZ: (Math.random() - 0.5) * 0.2
+                }
             };
 
             console.log(`Loading model: ${item.title}`);
@@ -110,7 +248,7 @@ export class ModelLoader {
                 (progress) => {
                     if (progress.total > 0) {
                         const percent = Math.min(Math.round((progress.loaded / progress.total) * 100), 100);
-                        if (percent % 25 === 0) { // Log every 25%
+                        if (percent % 25 === 0) {
                             console.log(`Loading ${item.title}: ${percent}%`);
                         }
                     }
@@ -134,6 +272,10 @@ export class ModelLoader {
         // Apply scale
         model.scale.copy(this.modelStates[item.id].scale);
         
+        // Set initial rotation
+        const manualRot = this.modelStates[item.id].manualRotation;
+        model.rotation.set(manualRot.baseRotationX, manualRot.baseRotationY, manualRot.baseRotationZ);
+        
         // Setup materials and shadows
         this.setupModelMaterials(model, item.id);
         
@@ -143,7 +285,6 @@ export class ModelLoader {
             this.mixers[item.id] = mixer;
             this.modelStates[item.id].mixer = mixer;
             
-            // Play all animations
             gltf.animations.forEach(clip => {
                 const action = mixer.clipAction(clip);
                 action.play();
@@ -171,34 +312,27 @@ export class ModelLoader {
     setupModelMaterials(model, modelId) {
         model.traverse(child => {
             if (child.isMesh) {
-                // Clone material to avoid shared references
                 child.material = child.material.clone();
                 child.material.transparent = true;
                 child.material.opacity = this.modelStates[modelId].currentOpacity;
                 child.castShadow = true;
                 child.receiveShadow = true;
                 
-                // Enhanced material properties
                 if (child.material.map) {
                     child.material.map.colorSpace = THREE.SRGBColorSpace;
                 }
                 
-                // Improve material appearance
                 if (child.material.isMeshStandardMaterial) {
-                    // Add subtle metallic and roughness variations
                     child.material.metalness = Math.min(child.material.metalness + 0.1, 1);
                     child.material.roughness = Math.max(child.material.roughness - 0.05, 0);
                     
-                    // Enhanced environment reflection
                     if (!child.material.envMap) {
-                        // Create a simple environment map
                         const envMap = this.createEnvironmentMap();
                         child.material.envMap = envMap;
                         child.material.envMapIntensity = 0.3;
                     }
                 }
                 
-                // Add subtle emission for glow effect
                 if (child.material.emissive) {
                     child.material.emissive.multiplyScalar(0.1);
                 }
@@ -207,11 +341,9 @@ export class ModelLoader {
     }
 
     createEnvironmentMap() {
-        // Create a simple cube environment map
         const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(256);
         const cubeCamera = new THREE.CubeCamera(0.1, 1000, cubeRenderTarget);
         
-        // Simple gradient environment
         const scene = new THREE.Scene();
         const geometry = new THREE.BoxGeometry(100, 100, 100);
         const material = new THREE.MeshBasicMaterial({
@@ -226,7 +358,6 @@ export class ModelLoader {
     }
 
     createSpotlightForModel(model, modelId, index) {
-        // Create spotlight
         const spotlight = new THREE.SpotLight(
             this.spotlightConfig.color,
             this.spotlightConfig.intensity,
@@ -236,7 +367,6 @@ export class ModelLoader {
             this.spotlightConfig.decay
         );
         
-        // Enable shadows
         spotlight.castShadow = true;
         spotlight.shadow.mapSize.width = 1024;
         spotlight.shadow.mapSize.height = 1024;
@@ -244,7 +374,6 @@ export class ModelLoader {
         spotlight.shadow.camera.far = this.spotlightConfig.distance;
         spotlight.shadow.bias = -0.0001;
         
-        // Position spotlight above and slightly in front of model
         const modelPosition = model.position.clone();
         spotlight.position.set(
             modelPosition.x,
@@ -252,18 +381,15 @@ export class ModelLoader {
             modelPosition.z + 5
         );
         
-        // Create target for spotlight
         const target = new THREE.Object3D();
         target.position.copy(modelPosition).add(this.spotlightConfig.targetOffset);
         this.scene.add(target);
         spotlight.target = target;
         
-        // Add color variation based on model index for visual interest
-        const hue = (index * 0.15) % 1; // Rotate hue for each model
+        const hue = (index * 0.15) % 1;
         const color = new THREE.Color().setHSL(hue, 0.3, 0.9);
         spotlight.color = color;
         
-        // Store spotlight and target
         this.spotlights[modelId] = {
             light: spotlight,
             target: target,
@@ -272,17 +398,14 @@ export class ModelLoader {
             targetIntensity: index === 0 ? this.spotlightConfig.intensity : 0
         };
         
-        // Add to scene
         this.scene.add(spotlight);
         
-        // Add helper for debugging (optional)
         if (this.showHelpers) {
             const helper = new THREE.SpotLightHelper(spotlight);
             this.spotlightHelpers[modelId] = helper;
             this.scene.add(helper);
         }
         
-        // Start with correct intensity
         spotlight.intensity = this.spotlights[modelId].currentIntensity;
     }
 
@@ -292,29 +415,24 @@ export class ModelLoader {
         
         const { light, target } = spotlightData;
         
-        // Update spotlight position
         light.position.set(
             modelPosition.x,
             this.spotlightConfig.height,
             modelPosition.z + 5
         );
         
-        // Update target position
         target.position.copy(modelPosition).add(this.spotlightConfig.targetOffset);
         
-        // Update helper if it exists
         if (this.spotlightHelpers[modelId]) {
             this.spotlightHelpers[modelId].update();
         }
     }
 
     activateSpotlight(modelId) {
-        // Deactivate all spotlights
         Object.keys(this.spotlights).forEach(id => {
             this.spotlights[id].targetIntensity = 0;
         });
         
-        // Activate spotlight for current model
         if (this.spotlights[modelId]) {
             this.spotlights[modelId].targetIntensity = this.spotlights[modelId].originalIntensity;
         }
@@ -322,7 +440,6 @@ export class ModelLoader {
 
     animateSpotlights(delta) {
         Object.values(this.spotlights).forEach(spotlightData => {
-            // Smooth intensity transition
             spotlightData.currentIntensity = THREE.MathUtils.lerp(
                 spotlightData.currentIntensity,
                 spotlightData.targetIntensity,
@@ -331,7 +448,6 @@ export class ModelLoader {
             
             spotlightData.light.intensity = spotlightData.currentIntensity;
             
-            // Add subtle intensity pulsing for active spotlight
             if (spotlightData.targetIntensity > 0) {
                 const time = Date.now() * 0.002;
                 const pulse = Math.sin(time) * 0.1 + 1;
@@ -346,10 +462,8 @@ export class ModelLoader {
         
         let targetX;
         if (isMobile) {
-            // Center models on mobile
             targetX = 0;
         } else {
-            // Position models opposite to content
             targetX = isContentOnLeft ? this.modelXOffset : -this.modelXOffset;
         }
         
@@ -357,21 +471,15 @@ export class ModelLoader {
         this.modelStates[modelId].currentX = targetX;
         model.position.x = targetX;
         
-        // Add slight Y offset for visual interest
         model.position.y = (Math.random() - 0.5) * 0.5;
-        
-        // Add slight rotation for dynamic look
-        model.rotation.y = (Math.random() - 0.5) * 0.2;
     }
 
     showModel(modelId, index) {
-        // Hide current model
         if (this.activeModelId && this.modelStates[this.activeModelId]) {
             this.modelStates[this.activeModelId].targetOpacity = 0;
             this.modelStates[this.activeModelId].visible = false;
         }
 
-        // Show new model
         this.activeModelId = modelId;
         
         if (this.modelStates[modelId]) {
@@ -383,7 +491,6 @@ export class ModelLoader {
             }
         }
         
-        // Activate spotlight for new model
         this.activateSpotlight(modelId);
     }
 
@@ -406,7 +513,6 @@ export class ModelLoader {
                 state.modelObject.position.x = targetX;
                 state.currentX = targetX;
                 
-                // Update spotlight position
                 this.updateSpotlightForModel(modelId, state.modelObject.position);
             }
         });
@@ -425,6 +531,102 @@ export class ModelLoader {
         }
     }
 
+    // Manual rotation methods
+    updateManualRotation(delta) {
+        // Apply dampening to velocities
+        this.manualRotation.velocityX *= this.manualRotation.dampening;
+        this.manualRotation.velocityY *= this.manualRotation.dampening;
+        
+        // Update target rotations
+        this.manualRotation.targetRotationY += this.manualRotation.velocityX;
+        this.manualRotation.targetRotationX += this.manualRotation.velocityY;
+        
+        // Smooth interpolation to target rotations
+        this.manualRotation.currentRotationX = THREE.MathUtils.lerp(
+            this.manualRotation.currentRotationX,
+            this.manualRotation.targetRotationX,
+            delta * 8
+        );
+        this.manualRotation.currentRotationY = THREE.MathUtils.lerp(
+            this.manualRotation.currentRotationY,
+            this.manualRotation.targetRotationY,
+            delta * 8
+        );
+        
+        // Apply rotation to models
+        if (this.manualRotation.rotateActiveOnly) {
+            // Only rotate active model
+            if (this.activeModelId && this.modelStates[this.activeModelId]) {
+                this.applyManualRotationToModel(this.activeModelId);
+            }
+        } else {
+            // Rotate all visible models
+            Object.keys(this.modelStates).forEach(modelId => {
+                const state = this.modelStates[modelId];
+                if (state.visible) {
+                    this.applyManualRotationToModel(modelId);
+                }
+            });
+        }
+    }
+
+    applyManualRotationToModel(modelId) {
+        const state = this.modelStates[modelId];
+        if (!state || !state.modelObject) return;
+        
+        const manualRot = state.manualRotation;
+        
+        // Apply manual rotation on top of base rotation
+        state.modelObject.rotation.x = manualRot.baseRotationX + this.manualRotation.currentRotationX;
+        state.modelObject.rotation.y = manualRot.baseRotationY + this.manualRotation.currentRotationY;
+        state.modelObject.rotation.z = manualRot.baseRotationZ;
+    }
+
+    // Manual rotation control methods
+    enableManualRotation() {
+        this.manualRotation.enabled = true;
+        this.renderer.domElement.style.cursor = 'grab';
+        console.log("Manual rotation enabled");
+    }
+
+    disableManualRotation() {
+        this.manualRotation.enabled = false;
+        this.manualRotation.isDragging = false;
+        this.renderer.domElement.style.cursor = 'default';
+        console.log("Manual rotation disabled");
+    }
+
+    setRotationSensitivity(sensitivity) {
+        this.manualRotation.sensitivity = Math.max(0.001, Math.min(0.1, sensitivity));
+        console.log("Rotation sensitivity set to:", this.manualRotation.sensitivity);
+    }
+
+    setRotationDampening(dampening) {
+        this.manualRotation.dampening = Math.max(0.8, Math.min(0.99, dampening));
+        console.log("Rotation dampening set to:", this.manualRotation.dampening);
+    }
+
+    resetManualRotation() {
+        this.manualRotation.targetRotationX = 0;
+        this.manualRotation.targetRotationY = 0;
+        this.manualRotation.currentRotationX = 0;
+        this.manualRotation.currentRotationY = 0;
+        this.manualRotation.velocityX = 0;
+        this.manualRotation.velocityY = 0;
+        console.log("Manual rotation reset");
+    }
+
+    // Method to disable zoom in any existing controls
+    disableZoom() {
+        // This method can be called to ensure zoom is disabled
+        // in your existing controls system
+        console.log("Zoom functionality disabled in ModelLoader");
+        
+        // If you're using OrbitControls, you would call:
+        // this.controls.enableZoom = false;
+        // this.controls.enablePan = false; // Optional: also disable panning
+    }
+
     getActiveModel() {
         return this.activeModelId ? this.modelStates[this.activeModelId] : null;
     }
@@ -441,6 +643,11 @@ export class ModelLoader {
     }
 
     update(delta) {
+        // Update manual rotation
+        if (this.manualRotation.enabled) {
+            this.updateManualRotation(delta);
+        }
+        
         // Update model animations and transitions
         for (const modelId in this.modelStates) {
             const state = this.modelStates[modelId];
@@ -461,7 +668,6 @@ export class ModelLoader {
                 );
                 state.modelObject.position.x = state.currentX;
                 
-                // Update spotlight position when model moves
                 this.updateSpotlightForModel(modelId, state.modelObject.position);
 
                 // Hide/show models based on opacity
@@ -479,11 +685,11 @@ export class ModelLoader {
                     state.mixer.update(delta);
                 }
 
-                // Add subtle floating animation to active model
-                if (modelId === this.activeModelId && state.visible) {
+                // Add subtle floating animation only if manual rotation is not active
+                if (modelId === this.activeModelId && state.visible && !this.manualRotation.isDragging) {
                     const time = Date.now() * 0.001;
-                    state.modelObject.position.y += Math.sin(time) * 0.001;
-                    state.modelObject.rotation.y += Math.sin(time * 0.5) * 0.0005;
+                    const floatingY = Math.sin(time) * 0.001;
+                    state.modelObject.position.y += floatingY;
                 }
             }
         }
@@ -498,12 +704,24 @@ export class ModelLoader {
     }
 
     dispose() {
+        // Remove event listeners properly
+        const canvas = this.renderer.domElement;
+        if (this.boundMouseDown) {
+            canvas.removeEventListener('mousedown', this.boundMouseDown);
+            canvas.removeEventListener('mousemove', this.boundMouseMove);
+            canvas.removeEventListener('mouseup', this.boundMouseUp);
+            canvas.removeEventListener('mouseleave', this.boundMouseLeave);
+            canvas.removeEventListener('touchstart', this.boundTouchStart);
+            canvas.removeEventListener('touchmove', this.boundTouchMove);
+            canvas.removeEventListener('touchend', this.boundTouchEnd);
+            canvas.removeEventListener('contextmenu', this.boundContextMenu);
+        }
+        
         // Clean up resources
         Object.values(this.modelStates).forEach(state => {
             if (state.modelObject) {
                 this.scene.remove(state.modelObject);
                 
-                // Dispose geometries and materials
                 state.modelObject.traverse(child => {
                     if (child.isMesh) {
                         if (child.geometry) child.geometry.dispose();
@@ -519,18 +737,15 @@ export class ModelLoader {
             }
         });
 
-        // Dispose mixers
         Object.values(this.mixers).forEach(mixer => {
             if (mixer) mixer.uncacheRoot(mixer.getRoot());
         });
         
-        // Dispose spotlights
         Object.values(this.spotlights).forEach(spotlightData => {
             this.scene.remove(spotlightData.light);
             this.scene.remove(spotlightData.target);
         });
         
-        // Dispose spotlight helpers
         Object.values(this.spotlightHelpers).forEach(helper => {
             this.scene.remove(helper);
         });
@@ -542,12 +757,10 @@ export class ModelLoader {
         this.activeModelId = null;
     }
 
-    // Debug method to toggle spotlight helpers
     toggleSpotlightHelpers() {
         this.showHelpers = !this.showHelpers;
         
         if (this.showHelpers) {
-            // Add helpers for existing spotlights
             Object.keys(this.spotlights).forEach(modelId => {
                 if (!this.spotlightHelpers[modelId]) {
                     const helper = new THREE.SpotLightHelper(this.spotlights[modelId].light);
@@ -556,7 +769,6 @@ export class ModelLoader {
                 }
             });
         } else {
-            // Remove all helpers
             Object.values(this.spotlightHelpers).forEach(helper => {
                 this.scene.remove(helper);
             });
@@ -564,11 +776,9 @@ export class ModelLoader {
         }
     }
 
-    // Method to update spotlight configuration
     updateSpotlightConfig(config) {
         this.spotlightConfig = { ...this.spotlightConfig, ...config };
         
-        // Update existing spotlights
         Object.values(this.spotlights).forEach(spotlightData => {
             const light = spotlightData.light;
             light.intensity = config.intensity || light.intensity;

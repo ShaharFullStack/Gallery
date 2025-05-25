@@ -13,30 +13,34 @@ export class MouseInteraction {
         this.mouse = new THREE.Vector2();
         
         // Interaction state
-        this.isInteracting = false;
-        this.isDragging = false;
         this.isHovering = false;
         this.hoveredModel = null;
-        this.activeModel = null;
         
-        // Mouse tracking
-        this.mouseStart = new THREE.Vector2();
-        this.mouseCurrent = new THREE.Vector2();
-        this.rotationSpeed = 0.01;
-        
-        // Touch support
-        this.touches = [];
-        this.touchStartDistance = 0;
+        // REMOVED: isDragging, isInteracting, activeModel - ModelLoader handles this now
+        // REMOVED: rotation and zoom functionality - delegated to ModelLoader
         
         this.setupEventListeners();
         this.createHoverOverlay();
+        
+        console.log("MouseInteraction initialized - Rotation delegated to ModelLoader, Zoom DISABLED");
     }
 
     createHoverOverlay() {
         this.hoverOverlay = document.createElement('div');
         this.hoverOverlay.className = 'model-hover-overlay';
-        this.hoverOverlay.style.width = '100px';
-        this.hoverOverlay.style.height = '100px';
+        this.hoverOverlay.style.cssText = `
+            position: fixed;
+            width: 100px;
+            height: 100px;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        `;
         document.body.appendChild(this.hoverOverlay);
     }
 
@@ -45,22 +49,18 @@ export class MouseInteraction {
         
         console.log('Setting up mouse interaction on canvas:', canvas);
         
-        // Mouse events
+        // ONLY mouse move for hover detection - ModelLoader handles drag events
         canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
-        canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
-        canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
-        canvas.addEventListener('wheel', this.onMouseWheel.bind(this), { passive: false });
-        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
         
-        // Touch events
-        canvas.addEventListener('touchstart', this.onTouchStart.bind(this), { passive: false });
-        canvas.addEventListener('touchmove', this.onTouchMove.bind(this), { passive: false });
-        canvas.addEventListener('touchend', this.onTouchEnd.bind(this), { passive: false });
+        // REMOVED: mousedown, mouseup, wheel events - ModelLoader handles these
+        // REMOVED: touch events - ModelLoader handles these
+        
+        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
         
         // Window events
         window.addEventListener('resize', this.onWindowResize.bind(this));
         
-        // Test event
+        // Click event for feedback only
         canvas.addEventListener('click', () => {
             console.log('Canvas clicked - mouse interaction is working');
         });
@@ -109,34 +109,20 @@ export class MouseInteraction {
 
     onMouseMove(event) {
         this.updateMousePosition(event);
-        this.mouseCurrent.set(event.clientX, event.clientY);
         
-        if (this.isDragging && this.activeModel) {
-            // Calculate rotation based on mouse movement
-            const deltaX = this.mouseCurrent.x - this.mouseStart.x;
-            const deltaY = this.mouseCurrent.y - this.mouseStart.y;
-            
-            this.rotateActiveModel(deltaX, deltaY);
-            this.mouseStart.copy(this.mouseCurrent);
-            
-            // Update cursor
-            this.renderer.domElement.className = 'grabbing';
-        } else {
-            // Check for hover
+        // Only handle hover detection - ModelLoader handles dragging
+        if (!this.modelLoader.manualRotation.isDragging) {
             const intersect = this.performRaycast();
             
             if (intersect) {
                 const modelId = this.findModelIdFromObject(intersect.object);
                 if (modelId && modelId === this.modelLoader.activeModelId) {
-                    this.setHovering(true, intersect.point);
-                    this.renderer.domElement.className = 'hovering';
+                    this.setHovering(true, intersect.point, modelId);
                 } else {
                     this.setHovering(false);
-                    this.renderer.domElement.className = '';
                 }
             } else {
                 this.setHovering(false);
-                this.renderer.domElement.className = '';
             }
         }
         
@@ -144,102 +130,13 @@ export class MouseInteraction {
         this.updateInteractionHint();
     }
 
-    onMouseDown(event) {
-        if (event.button !== 0) return; // Only left mouse button
-        
-        this.updateMousePosition(event);
-        this.mouseStart.set(event.clientX, event.clientY);
-        
-        const intersect = this.performRaycast();
-        
-        if (intersect) {
-            const modelId = this.findModelIdFromObject(intersect.object);
-            if (modelId && modelId === this.modelLoader.activeModelId) {
-                this.isDragging = true;
-                this.activeModel = modelId;
-                this.isInteracting = true;
-                this.renderer.domElement.className = 'grabbing';
-                
-                // Disable auto-rotation while interacting
-                if (this.onModelInteract) {
-                    this.onModelInteract('startInteraction', modelId);
-                }
-                
-                event.preventDefault();
-            }
-        }
-    }
+    // REMOVED: onMouseDown, onMouseUp, onMouseWheel - ModelLoader handles these
+    // REMOVED: rotateActiveModel - ModelLoader handles rotation
+    // REMOVED: touch events - ModelLoader handles these
 
-    onMouseUp(event) {
-        if (this.isDragging) {
-            this.isDragging = false;
-            this.isInteracting = false;
-            this.activeModel = null;
-            this.renderer.domElement.className = this.isHovering ? 'hovering' : '';
-            
-            // Re-enable auto-rotation
-            if (this.onModelInteract) {
-                this.onModelInteract('endInteraction');
-            }
-        }
-    }
-
-    onMouseWheel(event) {
-        event.preventDefault();
-        
-        // Check if we're hovering over the active model
-        const intersect = this.performRaycast();
-        if (intersect) {
-            const modelId = this.findModelIdFromObject(intersect.object);
-            if (modelId && modelId === this.modelLoader.activeModelId) {
-                // Zoom toward the model
-                const zoomSpeed = 0.1;
-                const direction = new THREE.Vector3();
-                direction.subVectors(this.camera.position, intersect.point).normalize();
-                
-                if (event.deltaY > 0) {
-                    // Zoom out
-                    this.camera.position.add(direction.multiplyScalar(zoomSpeed));
-                } else {
-                    // Zoom in
-                    this.camera.position.sub(direction.multiplyScalar(zoomSpeed));
-                }
-                
-                // Clamp zoom distance
-                const distance = this.camera.position.length();
-                if (distance < 2) {
-                    this.camera.position.normalize().multiplyScalar(2);
-                } else if (distance > 15) {
-                    this.camera.position.normalize().multiplyScalar(15);
-                }
-                
-                if (this.onModelInteract) {
-                    this.onModelInteract('zoom', modelId, event.deltaY);
-                }
-            }
-        }
-    }
-
-    rotateActiveModel(deltaX, deltaY) {
-        if (!this.activeModel) return;
-        
-        const modelState = this.modelLoader.modelStates[this.activeModel];
-        if (!modelState || !modelState.modelObject) return;
-        
-        const model = modelState.modelObject;
-        
-        // Rotate around Y axis (horizontal mouse movement)
-        model.rotation.y += deltaX * this.rotationSpeed;
-        
-        // Rotate around X axis (vertical mouse movement)
-        model.rotation.x += deltaY * this.rotationSpeed;
-        
-        // Clamp X rotation to prevent flipping
-        model.rotation.x = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, model.rotation.x));
-    }
-
-    setHovering(isHovering, point = null) {
+    setHovering(isHovering, point = null, modelId = null) {
         this.isHovering = isHovering;
+        this.hoveredModel = modelId;
         
         if (isHovering && point) {
             // Convert 3D point to screen coordinates
@@ -249,9 +146,18 @@ export class MouseInteraction {
             
             this.hoverOverlay.style.left = `${x}px`;
             this.hoverOverlay.style.top = `${y}px`;
-            this.hoverOverlay.classList.add('visible');
+            this.hoverOverlay.style.opacity = '1';
+            
+            // Notify about hover
+            if (this.onModelInteract) {
+                this.onModelInteract('hover', modelId, point);
+            }
         } else {
-            this.hoverOverlay.classList.remove('visible');
+            this.hoverOverlay.style.opacity = '0';
+            
+            if (this.onModelInteract) {
+                this.onModelInteract('hoverEnd');
+            }
         }
     }
 
@@ -259,7 +165,7 @@ export class MouseInteraction {
         const hintElement = document.getElementById('interactionHint');
         if (!hintElement) return;
         
-        if (this.isInteracting) {
+        if (this.modelLoader.manualRotation.isDragging) {
             hintElement.textContent = 'Dragging to rotate...';
             hintElement.classList.add('visible');
         } else if (this.isHovering) {
@@ -270,84 +176,6 @@ export class MouseInteraction {
         }
     }
 
-    // Touch Events
-    onTouchStart(event) {
-        event.preventDefault();
-        
-        if (event.touches.length === 1) {
-            // Single touch - treat as mouse click
-            const touch = event.touches[0];
-            this.updateMousePosition(touch);
-            this.mouseStart.set(touch.clientX, touch.clientY);
-            
-            const intersect = this.performRaycast();
-            if (intersect) {
-                const modelId = this.findModelIdFromObject(intersect.object);
-                if (modelId && modelId === this.modelLoader.activeModelId) {
-                    this.isDragging = true;
-                    this.activeModel = modelId;
-                    this.isInteracting = true;
-                    
-                    if (this.onModelInteract) {
-                        this.onModelInteract('startInteraction', modelId);
-                    }
-                }
-            }
-        } else if (event.touches.length === 2) {
-            // Two finger touch - prepare for zoom
-            const dx = event.touches[0].clientX - event.touches[1].clientX;
-            const dy = event.touches[0].clientY - event.touches[1].clientY;
-            this.touchStartDistance = Math.sqrt(dx * dx + dy * dy);
-        }
-    }
-
-    onTouchMove(event) {
-        event.preventDefault();
-        
-        if (event.touches.length === 1 && this.isDragging) {
-            // Single touch drag
-            const touch = event.touches[0];
-            this.mouseCurrent.set(touch.clientX, touch.clientY);
-            
-            const deltaX = this.mouseCurrent.x - this.mouseStart.x;
-            const deltaY = this.mouseCurrent.y - this.mouseStart.y;
-            
-            this.rotateActiveModel(deltaX, deltaY);
-            this.mouseStart.copy(this.mouseCurrent);
-            
-        } else if (event.touches.length === 2) {
-            // Two finger zoom
-            const dx = event.touches[0].clientX - event.touches[1].clientX;
-            const dy = event.touches[0].clientY - event.touches[1].clientY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (this.touchStartDistance > 0) {
-                const scale = distance / this.touchStartDistance;
-                const zoomDelta = (scale - 1) * 100; // Convert to wheel-like delta
-                
-                // Simulate wheel event for zoom
-                this.onMouseWheel({ deltaY: -zoomDelta, preventDefault: () => {} });
-            }
-            
-            this.touchStartDistance = distance;
-        }
-    }
-
-    onTouchEnd(event) {
-        event.preventDefault();
-        
-        if (event.touches.length === 0) {
-            this.isDragging = false;
-            this.isInteracting = false;
-            this.activeModel = null;
-            this.touchStartDistance = 0;
-            
-            if (this.onModelInteract) {
-                this.onModelInteract('endInteraction');
-            }
-        }
-    }
-
     onWindowResize() {
         // Update raycaster if needed
         this.mouse.set(0, 0);
@@ -355,23 +183,40 @@ export class MouseInteraction {
 
     // Public methods
     enableInteraction() {
-        this.renderer.domElement.style.pointerEvents = 'auto';
+        console.log("Interaction enabled - rotation handled by ModelLoader");
+        // ModelLoader handles pointer events
     }
 
     disableInteraction() {
-        this.renderer.domElement.style.pointerEvents = 'none';
+        console.log("Interaction disabled");
         this.setHovering(false);
-        this.isDragging = false;
-        this.isInteracting = false;
-        this.activeModel = null;
+        // Let ModelLoader handle disabling its interaction
+        if (this.modelLoader.disableManualRotation) {
+            this.modelLoader.disableManualRotation();
+        }
     }
 
     reset() {
         this.setHovering(false);
-        this.isDragging = false;
-        this.isInteracting = false;
-        this.activeModel = null;
-        this.renderer.domElement.className = '';
+        this.hoveredModel = null;
+    }
+
+    // Method to get current hover state (for other systems to use)
+    getHoverState() {
+        return {
+            isHovering: this.isHovering,
+            hoveredModel: this.hoveredModel
+        };
+    }
+
+    // Method to check if a specific point is hovering over a model
+    isPointOverModel(screenX, screenY) {
+        const rect = this.renderer.domElement.getBoundingClientRect();
+        this.mouse.x = ((screenX - rect.left) / rect.width) * 2 - 1;
+        this.mouse.y = -((screenY - rect.top) / rect.height) * 2 + 1;
+        
+        const intersect = this.performRaycast();
+        return intersect ? this.findModelIdFromObject(intersect.object) : null;
     }
 
     dispose() {
@@ -379,7 +224,14 @@ export class MouseInteraction {
             this.hoverOverlay.parentNode.removeChild(this.hoverOverlay);
         }
         
-        // Remove event listeners would go here if needed
+        // Remove our event listeners
+        const canvas = this.renderer.domElement;
+        canvas.removeEventListener('mousemove', this.onMouseMove);
+        canvas.removeEventListener('click', this.onClick);
+        canvas.removeEventListener('contextmenu', this.onContextMenu);
+        
+        window.removeEventListener('resize', this.onWindowResize);
+        
         this.reset();
     }
 }

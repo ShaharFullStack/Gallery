@@ -15,7 +15,7 @@ class Gallery3D {
         this.uiManager = null;
         this.mouseInteraction = null;
         this.currentIndex = 0;
-        
+
         this.init();
     }
 
@@ -33,20 +33,20 @@ class Gallery3D {
 
             // Initialize modules
             this.modelLoader = new ModelLoader(this.scene, this.renderer, this.camera);
-            
+
             // Configure spotlight settings if available
             if (this.settings.spotlightConfig) {
                 this.modelLoader.updateSpotlightConfig(this.settings.spotlightConfig);
             }
-            
+
             this.scrollHandler = new ScrollHandler(this.galleryData, this.onItemChange.bind(this));
             this.controls = new Controls(this.camera, this.renderer, this.modelLoader);
-            
+
             // Initialize mouse interaction for direct model control
             this.mouseInteraction = new MouseInteraction(
-                this.camera, 
-                this.renderer, 
-                this.scene, 
+                this.camera,
+                this.renderer,
+                this.scene,
                 this.modelLoader,
                 this.onModelInteract.bind(this)
             );
@@ -92,42 +92,42 @@ class Gallery3D {
     initScene() {
         // Scene setup
         this.scene = new THREE.Scene();
-        
+
         // Camera setup
         this.camera = new THREE.PerspectiveCamera(
-            75, 
-            window.innerWidth / window.innerHeight, 
-            0.1, 
+            75,
+            window.innerWidth / window.innerHeight,
+            0.1,
             1000
         );
         this.camera.position.set(0, 0, this.settings.cameraDistance);
 
         // Renderer setup
         const canvas = document.getElementById('main-three-canvas');
-        this.renderer = new THREE.WebGLRenderer({ 
-            canvas: canvas, 
-            antialias: true, 
+        this.renderer = new THREE.WebGLRenderer({
+            canvas: canvas,
+            antialias: true,
             alpha: true,
             powerPreference: "high-performance"
         });
-        
+
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         this.renderer.outputColorSpace = THREE.SRGBColorSpace;
         this.renderer.setClearColor(0x000000, 0);
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        
+
         // Lighting setup
         this.setupLighting();
-        
+
         // Clock for animations
         this.clock = new THREE.Clock();
     }
 
     setupLighting() {
         const lighting = this.settings.lightingIntensity;
-        
+
         // Ambient light
         const ambientLight = new THREE.AmbientLight(0x404040, lighting.ambient);
         this.scene.add(ambientLight);
@@ -168,22 +168,22 @@ class Gallery3D {
 
     createGalleryHTML() {
         const container = document.getElementById('gallery-container');
-        
+
         this.galleryData.forEach((item, index) => {
             const itemElement = document.createElement('div');
             itemElement.classList.add('gallery-item');
             itemElement.id = item.id;
-            
+
             // Alternate content positioning
             const isContentOnLeft = (index % 2) === 0;
             itemElement.classList.add(isContentOnLeft ? 'content-left' : 'content-right');
-            
+
             const wrapperElement = document.createElement('div');
             wrapperElement.classList.add('item-content-wrapper');
-            
+
             const contentElement = document.createElement('div');
             contentElement.classList.add('item-content');
-            
+
             // Image
             const img = document.createElement('img');
             img.src = item.imageUrl;
@@ -192,15 +192,15 @@ class Gallery3D {
             img.onerror = () => {
                 img.src = 'https://placehold.co/400x300/333/ccc?text=Image+Not+Found';
             };
-            
+
             // Title
             const title = document.createElement('h2');
             title.textContent = item.title;
-            
+
             // Description
             const description = document.createElement('p');
             description.textContent = item.description;
-            
+
             // Metadata
             const metadata = document.createElement('div');
             metadata.classList.add('item-meta');
@@ -208,7 +208,7 @@ class Gallery3D {
                 <span><strong>אמן:</strong> ${item.artist}</span>
                 <span><strong>שנה:</strong> ${item.year}</span>
             `;
-            
+
             // Assemble content
             contentElement.appendChild(img);
             contentElement.appendChild(title);
@@ -223,67 +223,67 @@ class Gallery3D {
     async loadModels() {
         const totalModels = this.galleryData.length;
         let loadedCount = 0;
-        
+
         // Configure scene layout for the number of models
         this.modelLoader.calculateSceneLayout(totalModels);
-        
+
         for (let i = 0; i < this.galleryData.length; i++) {
             const item = this.galleryData[i];
-            
+
             try {
                 await this.modelLoader.loadModel(item, i);
                 loadedCount++;
-                
+
                 // Update progress
                 const progress = (loadedCount / totalModels) * 100;
                 this.uiManager.updateProgress(progress);
-                
+
             } catch (error) {
                 console.error(`Failed to load model ${item.title}:`, error);
                 this.uiManager.showError(`Failed to load 3D model: ${item.title}`);
                 loadedCount++;
             }
         }
-        
+
         // Position first model
         if (this.galleryData.length > 0) {
             this.modelLoader.showModel(this.galleryData[0].id, 0);
             this.currentIndex = 0;
         }
-        
+
         console.log(`Loaded ${loadedCount}/${totalModels} models successfully`);
     }
 
     setupEventListeners() {
         // Window resize
         window.addEventListener('resize', this.onWindowResize.bind(this), { passive: true });
-        
+
         // Scroll handling
         window.addEventListener('scroll', this.scrollHandler.handleScroll.bind(this.scrollHandler), { passive: true });
-        
+
         // Keyboard navigation
         document.addEventListener('keydown', this.onKeyDown.bind(this));
-        
+
         // Minimal controls
         const autoRotateBtn = document.getElementById('autoRotateBtn');
         const resetViewBtn = document.getElementById('resetViewBtn');
-        
+
         if (autoRotateBtn) {
             autoRotateBtn.addEventListener('click', () => {
                 this.controls.toggleAutoRotate();
                 autoRotateBtn.classList.toggle('active');
-                
+
                 // Show user feedback
                 const isActive = autoRotateBtn.classList.contains('active');
                 this.uiManager.showSuccess(`Auto rotation ${isActive ? 'enabled' : 'disabled'}`);
             });
         }
-        
+
         if (resetViewBtn) {
             resetViewBtn.addEventListener('click', () => {
                 this.controls.resetView(this.currentIndex);
                 this.uiManager.showSuccess('View reset');
-                
+
                 // Reset mouse interaction
                 if (this.mouseInteraction) {
                     this.mouseInteraction.reset();
@@ -299,7 +299,7 @@ class Gallery3D {
                 this.controls.setAutoRotateSpeed(0);
                 this.uiManager.setButtonActive('autoRotateBtn', false);
                 break;
-                
+
             case 'endInteraction':
                 // Re-enable auto-rotation after interaction
                 setTimeout(() => {
@@ -308,7 +308,7 @@ class Gallery3D {
                     }
                 }, 2000); // Wait 2 seconds before resuming auto-rotation
                 break;
-                
+
             case 'zoom':
                 // Provide haptic feedback on mobile
                 if ('vibrate' in navigator && window.innerWidth <= 768) {
@@ -323,7 +323,7 @@ class Gallery3D {
         if (modelTitle && item) {
             modelTitle.textContent = item.title;
         }
-        
+
         const modelInfo = document.getElementById('modelInfo');
         if (modelInfo) {
             if (item) {
@@ -337,39 +337,39 @@ class Gallery3D {
     createProgressDots() {
         const progressDots = document.getElementById('progressDots');
         if (!progressDots) return;
-        
+
         progressDots.innerHTML = '';
         this.galleryData.forEach((item, index) => {
             const dot = document.createElement('div');
             dot.className = 'progress-dot';
             if (index === 0) dot.classList.add('active');
-            
+
             // Add click handler for direct navigation
             dot.addEventListener('click', () => {
                 console.log(`Dot ${index} clicked - navigating to ${item.title}`);
                 this.navigateToItem(index);
             });
-            
+
             // Add hover tooltip
             dot.title = item.title;
-            
+
             progressDots.appendChild(dot);
         });
-        
+
         console.log(`Created ${this.galleryData.length} progress dots`);
     }
 
     navigateToItem(index) {
         if (index >= 0 && index < this.galleryData.length && index !== this.currentIndex) {
             console.log(`Navigating from item ${this.currentIndex} to ${index}`);
-            
+
             const item = this.galleryData[index];
             const element = document.getElementById(item.id);
-            
+
             if (element) {
                 // Scroll to the element
                 element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
+
                 // Immediately switch the model (don't wait for scroll)
                 this.switchToItem(index);
             }
@@ -379,26 +379,26 @@ class Gallery3D {
     switchToItem(newIndex) {
         if (newIndex !== this.currentIndex && newIndex >= 0 && newIndex < this.galleryData.length) {
             console.log(`Switching from item ${this.currentIndex} to ${newIndex}`);
-            
+
             this.currentIndex = newIndex;
             const item = this.galleryData[newIndex];
-            
+
             // Switch 3D model immediately
             this.modelLoader.showModel(item.id, newIndex);
-            
+
             // Update UI elements
             this.updateProgressDots(newIndex);
             this.updateModelInfo(item);
             this.updateInteractionArea(newIndex);
-            
+
             // Update camera for new model position
             this.controls.updateCameraForModel(newIndex);
-            
+
             // Reset mouse interaction
             if (this.mouseInteraction) {
                 this.mouseInteraction.reset();
             }
-            
+
             console.log(`Successfully switched to: ${item.title}`);
         }
     }
@@ -413,10 +413,10 @@ class Gallery3D {
     updateInteractionArea(index) {
         const interactionArea = document.getElementById('modelInteractionArea');
         if (!interactionArea) return;
-        
+
         const isMobile = window.innerWidth <= 768;
         const isContentOnLeft = (index % 2) === 0;
-        
+
         if (isMobile) {
             // Hide on mobile since interaction works everywhere
             interactionArea.classList.remove('visible');
@@ -426,7 +426,7 @@ class Gallery3D {
             interactionArea.style.top = '';
             interactionArea.style.right = '';
             interactionArea.style.transform = '';
-            
+
             if (isContentOnLeft) {
                 // Content on left, model on right
                 interactionArea.classList.remove('left');
@@ -436,9 +436,9 @@ class Gallery3D {
                 interactionArea.classList.add('left');
                 interactionArea.classList.add('visible');
             }
-            
+
             console.log(`Model ${index}: Content on ${isContentOnLeft ? 'left' : 'right'}, Model positioned on ${isContentOnLeft ? 'right' : 'left'}`);
-            
+
             // Hide after 3 seconds
             setTimeout(() => {
                 interactionArea.classList.remove('visible');
@@ -478,16 +478,16 @@ class Gallery3D {
         // Update camera
         this.camera.aspect = window.innerWidth / window.innerHeight;
         this.camera.updateProjectionMatrix();
-        
+
         // Update renderer
         this.renderer.setSize(window.innerWidth, window.innerHeight);
-        
+
         // Update model positions
         this.modelLoader.updateModelPositions();
-        
+
         // Update controls
         this.controls.updateCameraForModel(this.currentIndex);
-        
+
         // Handle scroll
         this.scrollHandler.handleScroll();
     }
@@ -497,22 +497,22 @@ class Gallery3D {
         const mouseInstructions = document.getElementById('mouseInstructions');
         const modelInfo = document.getElementById('modelInfo');
         const progressIndicator = document.getElementById('progressIndicator');
-        
+
         setTimeout(() => {
             if (minimalControls) minimalControls.classList.add('visible');
             if (mouseInstructions) mouseInstructions.classList.add('visible');
             if (modelInfo) modelInfo.classList.add('visible');
             if (progressIndicator) progressIndicator.classList.add('visible');
         }, 500);
-        
+
         // Create progress dots
         this.createProgressDots();
-        
+
         // Set initial model info
         if (this.galleryData.length > 0) {
             this.updateModelInfo(this.galleryData[0]);
         }
-        
+
         // Hide mouse instructions after 5 seconds
         setTimeout(() => {
             if (mouseInstructions) {
@@ -523,19 +523,19 @@ class Gallery3D {
 
     animate() {
         requestAnimationFrame(this.animate.bind(this));
-        
+
         const delta = this.clock.getDelta();
-        
+
         // Update controls
         if (this.controls) {
             this.controls.update(delta);
         }
-        
+
         // Update models
         if (this.modelLoader) {
             this.modelLoader.update(delta);
         }
-        
+
         // Render scene
         this.renderer.render(this.scene, this.camera);
     }

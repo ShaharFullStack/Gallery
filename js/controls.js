@@ -8,136 +8,91 @@ export class Controls {
         this.modelLoader = modelLoader;
         
         this.setupOrbitControls();
-        this.setupTouchControls();
         this.setupKeyboardControls();
         
-        this.isAutoRotating = true;
-        this.rotationSpeed = 0.5;
-        this.zoomSpeed = 0.1;
+        // ENABLED auto-rotation, DISABLED zoom
+        this.isAutoRotating = true;           // ✅ ENABLED
+        this.rotationSpeed = 0.5;             // ✅ ENABLED
         this.manualRotationSpeed = 0.05;
         
         // Camera animation properties
         this.cameraTargetPosition = new THREE.Vector3();
-        this.cameraTargetLookAt = new THREE.Vector3(0, 0, 0); // Always look at center
-        this.isAnimatingCamera = false;
+        this.cameraTargetLookAt = new THREE.Vector3(0, 0, 0);
+        this.isAnimatingCamera = true;
+        
+        console.log("Controls initialized - Auto-rotation ENABLED, Zoom DISABLED");
     }
 
     setupOrbitControls() {
         this.orbitControls = new OrbitControls(this.camera, this.renderer.domElement);
         
-        // Configure controls for minimal interference with direct model interaction
+        // Disable camera auto-rotation, models will spin instead
         this.orbitControls.enableDamping = true;
         this.orbitControls.dampingFactor = 0.05;
-        this.orbitControls.autoRotate = this.isAutoRotating;
-        this.orbitControls.autoRotateSpeed = this.rotationSpeed;
+        this.orbitControls.autoRotate = false;           // ❌ DISABLED camera rotation
+        this.orbitControls.autoRotateSpeed = 0;          // ❌ DISABLED camera rotation
         this.orbitControls.minDistance = 2;
         this.orbitControls.maxDistance = 15;
-        this.orbitControls.enablePan = false; // Disable panning to keep focus on models
-        this.orbitControls.enableKeys = false; // Disable to avoid conflicts
-        this.orbitControls.enableRotate = false; // Disable orbit rotation to allow direct model interaction
-        this.orbitControls.enableZoom = false; // Disable orbit zoom to allow custom zoom on models
+        this.orbitControls.enablePan = false;            // DISABLED panning
+        this.orbitControls.enableKeys = false;           // DISABLED keys
+        this.orbitControls.enableRotate = false;         // DISABLED manual orbit rotation
+        this.orbitControls.enableZoom = false;           // DISABLED zoom
         
         // Target is always at center since models are centered
         this.orbitControls.target.set(0, 0, 0);
         
-        // Only auto-rotate, no user controls through OrbitControls
-        this.orbitControls.addEventListener('start', () => {
-            console.log('OrbitControls interaction detected - this should not happen');
-        });
-        
-        // Limit vertical rotation
-        this.orbitControls.minPolarAngle = Math.PI / 6; // 30 degrees from top
-        this.orbitControls.maxPolarAngle = Math.PI - Math.PI / 6; // 30 degrees from bottom
-    }
-
-    setupTouchControls() {
-        // Enhanced touch controls for mobile
-        let touchStartDistance = 0;
-        let touchStartTime = 0;
-        let isTouchZooming = false;
-        
-        const canvas = this.renderer.domElement;
-        
-        // Multi-touch zoom
-        canvas.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 2) {
-                isTouchZooming = true;
-                const dx = e.touches[0].clientX - e.touches[1].clientX;
-                const dy = e.touches[0].clientY - e.touches[1].clientY;
-                touchStartDistance = Math.sqrt(dx * dx + dy * dy);
-                touchStartTime = Date.now();
-                e.preventDefault();
-            }
-        }, { passive: false });
-        
-        canvas.addEventListener('touchmove', (e) => {
-            if (isTouchZooming && e.touches.length === 2) {
-                const dx = e.touches[0].clientX - e.touches[1].clientX;
-                const dy = e.touches[0].clientY - e.touches[1].clientY;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (touchStartDistance > 0) {
-                    const scale = distance / touchStartDistance;
-                    const zoomDelta = (scale + 1) * 2;
-                    this.zoom(-zoomDelta);
-                }
-                
-                touchStartDistance = distance;
-                e.preventDefault();
-            }
-        }, { passive: false });
-        
-        canvas.addEventListener('touchend', () => {
-            isTouchZooming = false;
-            touchStartDistance = 0;
-        });
+        // Limit vertical rotation (even though manual rotation is disabled)
+        this.orbitControls.minPolarAngle = Math.PI / 6;
+        this.orbitControls.maxPolarAngle = Math.PI - Math.PI / 6;
     }
 
     setupKeyboardControls() {
-        // Keyboard shortcuts
+        // REMOVED zoom controls (+/-) as requested
+        // REMOVED rotation controls (WASD) to avoid conflicts with ModelLoader
         document.addEventListener('keydown', (e) => {
             if (e.target.tagName.toLowerCase() === 'input') return;
             
             switch (e.key.toLowerCase()) {
-                case '+':
-                case '=':
+                case 'r':
                     e.preventDefault();
-                    this.zoom(-1);
+                    this.resetView();
                     break;
-                case '-':
+                case 'h':
                     e.preventDefault();
-                    this.zoom(1);
+                    this.showHelp();
                     break;
-                case 'a':
+                case 't':
                     e.preventDefault();
-                    this.rotate(-this.manualRotationSpeed);
-                    break;
-                case 'd':
-                    e.preventDefault();
-                    this.rotate(this.manualRotationSpeed);
-                    break;
-                case 'w':
-                    e.preventDefault();
-                    this.tilt(-this.manualRotationSpeed);
-                    break;
-                case 's':
-                    e.preventDefault();
-                    this.tilt(this.manualRotationSpeed);
+                    this.toggleAutoRotate();
                     break;
             }
         });
     }
 
+    showHelp() {
+        console.log("Controls Help:");
+        console.log("- Drag models to rotate them manually");
+        console.log("- R: Reset camera view");
+        console.log("- T: Toggle auto-rotation");
+        console.log("- H: Show this help");
+    }
+
+    // ENABLED - Auto-rotation controls
     toggleAutoRotate() {
         this.isAutoRotating = !this.isAutoRotating;
         this.orbitControls.autoRotate = this.isAutoRotating;
         
         // Provide visual feedback
         if (this.isAutoRotating) {
+            this.orbitControls.autoRotateSpeed = this.rotationSpeed;
+            this.orbitControls.update();
             console.log('Auto rotation enabled');
         } else {
+            this.orbitControls.autoRotateSpeed = 0;
+            this.orbitControls.update();
             console.log('Auto rotation disabled');
         }
+        return this.isAutoRotating;
     }
 
     setAutoRotateSpeed(speed) {
@@ -145,25 +100,18 @@ export class Controls {
         this.orbitControls.autoRotateSpeed = speed;
         this.orbitControls.autoRotate = speed > 0;
         this.isAutoRotating = speed > 0;
+        console.log("Auto-rotation speed set to:", speed);
     }
 
+    // DISABLED - Zoom controls removed
     zoom(delta) {
-        const currentDistance = this.camera.position.distanceTo(this.orbitControls.target);
-        let newDistance = currentDistance + (delta * this.zoomSpeed);
-        
-        // Clamp zoom distance
-        newDistance = Math.max(this.orbitControls.minDistance, Math.min(this.orbitControls.maxDistance, newDistance));
-        
-        // Apply zoom smoothly
-        const direction = new THREE.Vector3();
-        direction.subVectors(this.camera.position, this.orbitControls.target).normalize();
-        this.camera.position.copy(this.orbitControls.target).add(direction.multiplyScalar(newDistance));
-        
-        this.orbitControls.update();
+        console.log("Zoom is disabled");
+        return;
     }
 
+    // Camera control for scene navigation (not model rotation)
     rotate(angle) {
-        // Manual rotation around Y axis
+        // Manual camera rotation around Y axis (not model rotation)
         const spherical = new THREE.Spherical();
         spherical.setFromVector3(this.camera.position.clone().sub(this.orbitControls.target));
         spherical.theta += angle;
@@ -174,7 +122,7 @@ export class Controls {
     }
 
     tilt(angle) {
-        // Manual tilt (phi rotation)
+        // Manual camera tilt (phi rotation)
         const spherical = new THREE.Spherical();
         spherical.setFromVector3(this.camera.position.clone().sub(this.orbitControls.target));
         spherical.phi = Math.max(
@@ -189,25 +137,28 @@ export class Controls {
 
     resetView(currentIndex = 0) {
         // Reset to optimal viewing position for centered models
-        const targetPosition = new THREE.Vector3(0, 1, 8); // Look at center from slightly above
-        const targetLookAt = new THREE.Vector3(0, 0, 0); // Always look at center
+        const targetPosition = new THREE.Vector3(0, 1, 8);
+        const targetLookAt = new THREE.Vector3(0, 0, 0);
         
         // Smooth camera animation
         this.animateCameraTo(targetPosition, targetLookAt);
         
-        // Reset zoom and rotation
+        // Reset OrbitControls
         this.orbitControls.target.copy(targetLookAt);
         this.orbitControls.update();
+        
+        // Reset model rotations in ModelLoader
+        if (this.modelLoader && this.modelLoader.resetManualRotation) {
+            this.modelLoader.resetManualRotation();
+        }
     }
 
     updateCameraForModel(modelIndex) {
-        // Since all models are centered, camera doesn't need to move horizontally
-        // Just ensure we're looking at the center
+        // Since all models are centered, minimal camera movement needed
         const targetPosition = new THREE.Vector3(this.camera.position.x, this.camera.position.y, this.camera.position.z);
-        const targetLookAt = new THREE.Vector3(0, 0, 0); // Always center
+        const targetLookAt = new THREE.Vector3(0, 0, 0);
         
-        // Smooth transition - minimal since models are all in same position
-        const duration = 800; // Shorter duration since less movement needed
+        const duration = 800;
         this.animateCameraTo(targetPosition, targetLookAt, duration);
     }
 
@@ -224,13 +175,9 @@ export class Controls {
             const elapsed = Date.now() - startTime;
             const progress = Math.min(elapsed / duration, 1);
             
-            // Smooth easing function
             const eased = this.easeInOutCubic(progress);
             
-            // Interpolate position
             this.camera.position.lerpVectors(startPosition, targetPosition, eased);
-            
-            // Interpolate look-at target
             this.orbitControls.target.lerpVectors(startLookAt, targetLookAt, eased);
             
             this.orbitControls.update();
@@ -249,16 +196,13 @@ export class Controls {
         return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
     }
 
-    // Focus on specific point with smooth animation
     focusOnPoint(point, distance = 5) {
-        // Since models are centered, point should typically be (0,0,0)
         const direction = new THREE.Vector3(1, 0.5, 1).normalize();
         const targetPosition = point.clone().add(direction.multiplyScalar(distance));
         
         this.animateCameraTo(targetPosition, point);
     }
 
-    // Get current camera state for saving/loading views
     getCameraState() {
         return {
             position: this.camera.position.clone(),
@@ -276,16 +220,11 @@ export class Controls {
         this.orbitControls.update();
     }
 
-    // Mouse/touch interaction feedback
     setInteractionFeedback(enabled) {
-        if (enabled) {
-            this.renderer.domElement.style.cursor = 'grab';
-        } else {
-            this.renderer.domElement.style.cursor = 'default';
-        }
+        // Let ModelLoader handle cursor changes
+        return;
     }
 
-    // Performance optimization for low-end devices
     setPerformanceMode(enabled) {
         if (enabled) {
             this.orbitControls.enableDamping = false;
@@ -296,12 +235,10 @@ export class Controls {
         }
     }
 
-    // Accessibility: programmatic control for screen readers
     announcePosition() {
         const distance = this.camera.position.distanceTo(this.orbitControls.target);
         const announcement = `Camera distance: ${distance.toFixed(1)} units, Auto-rotation: ${this.isAutoRotating ? 'enabled' : 'disabled'}`;
         
-        // Create temporary element for screen reader announcement
         const announcement_element = document.createElement('div');
         announcement_element.setAttribute('aria-live', 'polite');
         announcement_element.setAttribute('aria-atomic', 'true');
