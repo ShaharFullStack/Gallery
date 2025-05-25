@@ -89,7 +89,6 @@ JSON Config → Main → ModelLoader → Three.js Scene
 **Critical CSS Classes**:
 - `.gallery-item`: Individual artwork sections
 - `.content-left/.content-right`: Alternating layout
-- `.model-interaction-area`: Interaction hints
 - `.progress-dot`: Navigation elements
 
 **Known Issues**:
