@@ -62,9 +62,45 @@
       "technique": "Gemini on tripo"
     },
     {
+      "id": "shaharHeb",
+      "title": "שחר מעוז",
+      "description": "מאש לשם שלי",
+      "imageUrl": "https://shaharfullstack.github.io/gltfLoader/ShaharHeb.png",
+      "modelUrl": "https://shaharfullstack.github.io/gltfLoader/ShaharHeb.glb",
+      "modelScale": [4, 4, 4],
+      "artist": "שחר מעוז",
+      "year": "2025",
+      "material": "Midjourney",
+      "technique": "Midjourney on tripo"
+    },
+    {
+      "id": "shaharEng",
+      "title": "Sahar Maoz",
+      "description": "A sculpture of my name in English, combining elements of 3d art.",
+      "imageUrl": "https://shaharfullstack.github.io/gltfLoader/ShaharEng.png",
+      "modelUrl": "https://shaharfullstack.github.io/gltfLoader/ShaharEng.glb",
+      "modelScale": [4, 4, 4],
+      "artist": "שחר מעוז",
+      "year": "2025",
+      "material": "Midjourney",
+      "technique": "Midjourney on tripo"
+    },
+    {
+      "id": "lips",
+      "title": "שפתיים",
+      "description": "פיסול של שפתיים, המשלב אלמנטים של יופי ואומנות.",
+      "imageUrl": "https://shaharfullstack.github.io/gltfLoader/lips.png",
+      "modelUrl": "https://shaharfullstack.github.io/gltfLoader/lips.glb",
+      "modelScale": [7, 7, 7],
+      "artist": "שחר מעוז",
+      "year": "2025",
+      "material": "Midjourney",
+      "technique": "Gemini on tripo"
+    },
+    {
       "id": "goldenLogo",
       "title": "לוגו מוזהב",
-      "description": "לוגו מוזהב, שילוב של האותיות S M באופן קליגרפי, המבטא את האומנות והחדשנות של המותג. היצירה משדרת יוקרה ואלגנטיות.",
+      "description": "פיסול של הלוגו שלי, עשוי זהב טהור. היצירה מבטאת את הערכים של יוקרה ואיכות המותג שלי.",
       "imageUrl": "https://shaharportfolio.web.app/Logo.png",
       "modelUrl": "https://shaharfullstack.github.io/gltfLoader/goldenLogo.glb",
       "modelScale": [7, 7, 7],
@@ -76,7 +112,7 @@
     {
       "id": "my-logo-balloon",
       "title": "לוגו בלון",
-      "description": "וריאזציה הומוריסטית על הלוגו שלי, המוצג כבלון מנופח. היצירה מבטאת את הרוח הקלה והמשחקית של המותג.",
+      "description": "וריאזציה הומוריסטית על הלוגו שלי המוצג כבלון מנופח. היצירה מבטאת את הרוח הקלה והמשחקית של המותג.",
       "imageUrl": "https://shaharfullstack.github.io/gltfLoader/BaloonLogo.png",
       "modelUrl": "https://shaharfullstack.github.io/gltfLoader/LogoNew.glb",
       "modelScale": [7, 7, 7],
@@ -86,7 +122,7 @@
       "technique": "Gemini on ChatGPT on tripo"
     }
   ],
-  "defaultModel": "https://shaharfullstack.github.io/gltfLoader/goldenLogo.glb",
+  "defaultModel": "https://shaharfullstack.github.io/gltfLoader/ShaharHeb.glb",
   "settings": {
     "autoRotateSpeed": 2,
     "cameraDistance": 7,
