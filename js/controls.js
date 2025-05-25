@@ -18,7 +18,7 @@ export class Controls {
         
         // Camera animation properties
         this.cameraTargetPosition = new THREE.Vector3();
-        this.cameraTargetLookAt = new THREE.Vector3();
+        this.cameraTargetLookAt = new THREE.Vector3(0, 0, 0); // Always look at center
         this.isAnimatingCamera = false;
     }
 
@@ -36,6 +36,9 @@ export class Controls {
         this.orbitControls.enableKeys = false; // Disable to avoid conflicts
         this.orbitControls.enableRotate = false; // Disable orbit rotation to allow direct model interaction
         this.orbitControls.enableZoom = false; // Disable orbit zoom to allow custom zoom on models
+        
+        // Target is always at center since models are centered
+        this.orbitControls.target.set(0, 0, 0);
         
         // Only auto-rotate, no user controls through OrbitControls
         this.orbitControls.addEventListener('start', () => {
@@ -185,14 +188,9 @@ export class Controls {
     }
 
     resetView(currentIndex = 0) {
-        // Reset to optimal viewing position for current model
-        const modelPosition = this.modelLoader.getModelPosition(currentIndex);
-        const isMobile = window.innerWidth <= 768;
-        
-        // Target position and look-at point with better camera positioning
-        const cameraOffset = isMobile ? 0 : modelPosition * 0.2; // Reduced from 0.3 to 0.2
-        const targetPosition = new THREE.Vector3(cameraOffset, 1, 8); // Slightly higher and further back
-        const targetLookAt = new THREE.Vector3(modelPosition, 0, 0);
+        // Reset to optimal viewing position for centered models
+        const targetPosition = new THREE.Vector3(0, 1, 8); // Look at center from slightly above
+        const targetLookAt = new THREE.Vector3(0, 0, 0); // Always look at center
         
         // Smooth camera animation
         this.animateCameraTo(targetPosition, targetLookAt);
@@ -203,16 +201,13 @@ export class Controls {
     }
 
     updateCameraForModel(modelIndex) {
-        const modelPosition = this.modelLoader.getModelPosition(modelIndex);
-        const isMobile = window.innerWidth <= 768;
+        // Since all models are centered, camera doesn't need to move horizontally
+        // Just ensure we're looking at the center
+        const targetPosition = new THREE.Vector3(this.camera.position.x, this.camera.position.y, this.camera.position.z);
+        const targetLookAt = new THREE.Vector3(0, 0, 0); // Always center
         
-        // Calculate new camera position with better framing
-        const cameraOffset = isMobile ? 0 : modelPosition * 0.2;
-        const targetPosition = new THREE.Vector3(cameraOffset, this.camera.position.y, this.camera.position.z);
-        const targetLookAt = new THREE.Vector3(modelPosition, 0, 0);
-        
-        // Smooth transition with longer duration for more models
-        const duration = this.modelLoader.totalModels > 6 ? 1500 : 1000;
+        // Smooth transition - minimal since models are all in same position
+        const duration = 800; // Shorter duration since less movement needed
         this.animateCameraTo(targetPosition, targetLookAt, duration);
     }
 
@@ -256,6 +251,7 @@ export class Controls {
 
     // Focus on specific point with smooth animation
     focusOnPoint(point, distance = 5) {
+        // Since models are centered, point should typically be (0,0,0)
         const direction = new THREE.Vector3(1, 0.5, 1).normalize();
         const targetPosition = point.clone().add(direction.multiplyScalar(distance));
         
