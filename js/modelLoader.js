@@ -334,7 +334,7 @@ export class ModelLoader {
             // Add subtle intensity pulsing for active spotlight
             if (spotlightData.targetIntensity > 0) {
                 const time = Date.now() * 0.002;
-                const pulse = Math.sin(time) * 0.1 + 1.3;
+                const pulse = Math.sin(time) * 0.1 + 1;
                 spotlightData.light.intensity = spotlightData.currentIntensity * pulse;
             }
         });

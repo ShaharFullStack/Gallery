@@ -37,11 +37,11 @@
       "technique": "Midjourney on tripo"
     },
     {
-      "id": "rider",
-      "title": "רוכב על סוס",
-      "description": "פיסול של רוכב על סוס, המבטא את החופש וההרפתקה שבנסיעה. היצירה משקפת את הקשר בין האדם לבעלי החיים.",
-      "imageUrl": "https://cdn.midjourney.com/dc275c54-18ca-40db-8a18-bea91f2adaa7/0_1.png",
-      "modelUrl": "https://shaharfullstack.github.io/gltfLoader/roboHead.glb",
+      "id": "maskflower",
+      "title": "מסכת פרחים",
+      "description": "פיסול של מסכת פרחים, המשלבת אלמנטים של טבע ואומנות. היצירה מבטאת את הקשר בין האדם לטבע.",
+      "imageUrl": "https://cdn.midjourney.com/3e6c43cd-98c5-41e2-8df2-1789506e30fd/0_3.png",
+      "modelUrl": "https://shaharfullstack.github.io/gltfLoader/maskflower.glb",
       "modelScale": [7, 7, 7],
       "artist": "שחר מעוז",
       "year": "2025",
@@ -70,11 +70,11 @@
       "ambient": 0.4,
       "main": 1.5,
       "fill": 0.5,
-      "rim": 0.8
+      "rim": 0.9
     },
     "spotlightConfig": {
       "intensity": 4.0,
-      "distance": 20,
+      "distance": 30,
       "angle": 0.50,
       "penumbra": 0.3,
       "decay": 1.5,
@@ -83,9 +83,9 @@
       "pulsing": true
     },
     "animations": {
-      "transitionDuration": 1000,
-      "fadeSpeed": 3,
-      "positionSpeed": 4
+      "transitionDuration": 2000,
+      "fadeSpeed": 2,
+      "positionSpeed": 2
     },
     "controls": {
       "enableDamping": true,

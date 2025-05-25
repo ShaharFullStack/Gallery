@@ -57,7 +57,7 @@ export class ScrollHandler {
                 const elementCenter = rect.top + rect.height / 2;
                 const distanceFromCenter = Math.abs(elementCenter - viewportCenter);
                 const maxDistance = window.innerHeight / 2;
-                const centerBoost = 1 - (distanceFromCenter * maxDistance);
+                const centerBoost = 1 - (distanceFromCenter / maxDistance);
                 visibility *= (1 + centerBoost);
             }
 
