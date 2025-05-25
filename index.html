@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Gallery - Interactive Art Collection</title>
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/"
+        }
+    }
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Loading 3D Gallery...</div>
+            <div class="loading-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <span class="progress-text" id="progressText">0%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-message" id="errorMessage">
+        <span class="error-text" id="errorText"></span>
+        <button class="error-close" id="errorClose">&times;</button>
+    </div>
+
+    <!-- Main 3D Canvas -->
+    <canvas id="main-three-canvas"></canvas>
+    
+    <!-- Model Interaction Area Hint -->
+    <div class="model-interaction-area" id="modelInteractionArea"></div>
+    
+    <!-- Gallery Container -->
+    <div id="gallery-container"></div>
+
+    <!-- Minimal Controls -->
+    <div class="minimal-controls" id="minimalControls">
+        <button class="control-btn minimal" id="autoRotateBtn" title="Toggle Auto Rotation">
+            <span class="icon">🔄</span>
+        </button>
+        <button class="control-btn minimal" id="resetViewBtn" title="Reset View">
+            <span class="icon">🎯</span>
+        </button>
+    </div>
+
+    <!-- Mouse Instructions Overlay -->
+    <div class="mouse-instructions" id="mouseInstructions">
+        <div class="instruction-item">
+            <span class="instruction-icon">🖱️</span>
+            <span class="instruction-text">Drag on model to rotate</span>
+        </div>
+        <div class="instruction-item">
+            <span class="instruction-icon">🔍</span>
+            <span class="instruction-text">Scroll to zoom</span>
+        </div>
+        <div class="instruction-item">
+            <span class="instruction-icon">📱</span>
+            <span class="instruction-text">Scroll page to navigate</span>
+        </div>
+    </div>
+
+    <!-- Model Info Display -->
+    <div class="model-info" id="modelInfo">
+        <div class="model-title" id="modelTitle"></div>
+        <div class="model-interaction-hint" id="interactionHint">Click and drag to interact</div>
+    </div>
+
+    <!-- Progress Indicator -->
+    <div class="progress-indicator" id="progressIndicator">
+        <div class="progress-dots" id="progressDots"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

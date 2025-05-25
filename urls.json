@@ -1,0 +1,99 @@
+{
+  "galleryItems": [
+            {
+      "id": "goldenLogo",
+      "title": "לוגו מוזהב",
+      "description": "לוגו מוזהב, שילוב של האותיות S M באופן קליגרפי, המבטא את האומנות והחדשנות של המותג. היצירה משדרת יוקרה ואלגנטיות.",
+      "imageUrl": "https://shaharportfolio.web.app/Logo.png",
+      "modelUrl": "https://shaharfullstack.github.io/gltfLoader/goldenLogo.glb",
+      "modelScale": [7, 7, 7],
+      "artist": "שחר מעוז",
+      "year": "2025",
+      "material": "זהב טהור",
+      "technique": "Gemini on ChatGPT on tripo"
+    },
+    {
+      "id": "my-logo-balloon",
+      "title": "לוגו בלון",
+      "description": "וריאזציה הומוריסטית על הלוגו שלי, המוצג כבלון מנופח. היצירה מבטאת את הרוח הקלה והמשחקית של המותג.",
+      "imageUrl": "https://shaharfullstack.github.io/gltfLoader/BaloonLogo.png",
+      "modelUrl": "https://shaharfullstack.github.io/gltfLoader/LogoNew.glb",
+      "modelScale": [7, 7, 7],
+      "artist": "שחר מעוז",
+      "year": "2025",
+      "material": "בלון כזה של יומולדת",
+      "technique": "Gemini on ChatGPT on tripo"
+    },
+    {
+      "id": "robo-head",
+      "title": "ראש רובוטי",
+      "description": "פיסול של ראש רובוטי, המשלב אלמנטים של טכנולוגיה ואומנות. היצירה מבטאת את החיבור בין האדם למכונה.",
+      "imageUrl": "https://cdn.midjourney.com/dc275c54-18ca-40db-8a18-bea91f2adaa7/0_1.png",
+      "modelUrl": "https://shaharfullstack.github.io/gltfLoader/rooboHelm.glb",
+      "modelScale": [7, 7, 7],
+      "artist": "שחר מעוז",
+      "year": "2025",
+      "material": "Midjourney",
+      "technique": "Midjourney on tripo"
+    },
+    {
+      "id": "rider",
+      "title": "רוכב על סוס",
+      "description": "פיסול של רוכב על סוס, המבטא את החופש וההרפתקה שבנסיעה. היצירה משקפת את הקשר בין האדם לבעלי החיים.",
+      "imageUrl": "https://cdn.midjourney.com/dc275c54-18ca-40db-8a18-bea91f2adaa7/0_1.png",
+      "modelUrl": "https://shaharfullstack.github.io/gltfLoader/roboHead.glb",
+      "modelScale": [7, 7, 7],
+      "artist": "שחר מעוז",
+      "year": "2025",
+      "material": "בלון כזה של יומולדת",
+      "technique": "Gemini on tripo"
+    },
+    {
+      "id": "rider",
+      "title": "רוכב על סוס",
+      "description": "פיסול של רוכב על סוס, המבטא את החופש וההרפתקה שבנסיעה. היצירה משקפת את הקשר בין האדם לבעלי החיים.",
+      "imageUrl": "https://cdn.midjourney.com/dc275c54-18ca-40db-8a18-bea91f2adaa7/0_1.png",
+      "modelUrl": "https://shaharfullstack.github.io/gltfLoader/roboHead.glb",
+      "modelScale": [7, 7, 7],
+      "artist": "שחר מעוז",
+      "year": "2025",
+      "material": "בלון כזה של יומולדת",
+      "technique": "Gemini on tripo"
+    }
+  ],
+  "defaultModel": "https://shaharfullstack.github.io/gltfLoader/goldenLogo.glb",
+  "settings": {
+    "autoRotateSpeed": 2,
+    "cameraDistance": 7,
+    "modelXOffset": 4,
+    "lightingIntensity": {
+      "ambient": 0.4,
+      "main": 1.5,
+      "fill": 0.5,
+      "rim": 0.8
+    },
+    "spotlightConfig": {
+      "intensity": 4.0,
+      "distance": 20,
+      "angle": 0.50,
+      "penumbra": 0.3,
+      "decay": 1.5,
+      "height": 8,
+      "colorVariation": true,
+      "pulsing": true
+    },
+    "animations": {
+      "transitionDuration": 1000,
+      "fadeSpeed": 3,
+      "positionSpeed": 4
+    },
+    "controls": {
+      "enableDamping": true,
+      "dampingFactor": 0.05,
+      "minDistance": 2,
+      "maxDistance": 15,
+      "enablePan": false,
+      "enableKeys": true
+    }
+  }
+}
