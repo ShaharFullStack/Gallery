@@ -11,8 +11,8 @@ export class Controls {
         this.setupKeyboardControls();
         
         // ENABLED auto-rotation, DISABLED zoom
-        this.isAutoRotating = true;           // ✅ ENABLED
-        this.rotationSpeed = 0.5;             // ✅ ENABLED
+        this.isAutoRotating = true;           
+        this.rotationSpeed = 0.5;             
         this.manualRotationSpeed = 0.05;
         
         // Camera animation properties
@@ -29,8 +29,8 @@ export class Controls {
         // Disable camera auto-rotation, models will spin instead
         this.orbitControls.enableDamping = true;
         this.orbitControls.dampingFactor = 0.05;
-        this.orbitControls.autoRotate = false;           // ❌ DISABLED camera rotation
-        this.orbitControls.autoRotateSpeed = 0;          // ❌ DISABLED camera rotation
+        this.orbitControls.autoRotate = false;           
+        this.orbitControls.autoRotateSpeed = 0;          
         this.orbitControls.minDistance = 2;
         this.orbitControls.maxDistance = 15;
         this.orbitControls.enablePan = false;            // DISABLED panning
@@ -137,7 +137,7 @@ export class Controls {
 
     resetView(currentIndex = 0) {
         // Reset to optimal viewing position for centered models
-        const targetPosition = new THREE.Vector3(0, 1, 8);
+        const targetPosition = new THREE.Vector3(0, 1, 0);
         const targetLookAt = new THREE.Vector3(0, 0, 0);
         
         // Smooth camera animation
