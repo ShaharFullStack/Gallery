@@ -6,14 +6,19 @@ export class Controls {
         this.camera = camera;
         this.renderer = renderer;
         this.modelLoader = modelLoader;
-        
-        this.setupOrbitControls();
+          this.setupOrbitControls();
         this.setupKeyboardControls();
         
         // ENABLED auto-rotation, DISABLED zoom
         this.isAutoRotating = true;           
         this.rotationSpeed = 0.5;             
-        this.manualRotationSpeed = 0.05;
+        this.manualRotationSpeed = 0.005;
+        
+        // Initialize ModelLoader auto rotation to match controls state
+        if (this.modelLoader) {
+            this.modelLoader.setAutoRotationSpeed(this.rotationSpeed);
+            this.modelLoader.enableAutoRotation();
+        }
         
         // Camera animation properties
         this.cameraTargetPosition = new THREE.Vector3();
@@ -21,16 +26,14 @@ export class Controls {
         this.isAnimatingCamera = true;
         
         console.log("Controls initialized - Auto-rotation ENABLED, Zoom DISABLED");
-    }
-
-    setupOrbitControls() {
+    }    setupOrbitControls() {
         this.orbitControls = new OrbitControls(this.camera, this.renderer.domElement);
         
-        // Disable camera auto-rotation, models will spin instead
+        // Completely disable camera auto-rotation - models will rotate instead
         this.orbitControls.enableDamping = true;
         this.orbitControls.dampingFactor = 0.05;
-        this.orbitControls.autoRotate = false;           
-        this.orbitControls.autoRotateSpeed = 0;          
+        this.orbitControls.autoRotate = false;           // DISABLED - models rotate instead
+        this.orbitControls.autoRotateSpeed = 0;          // DISABLED - models rotate instead
         this.orbitControls.minDistance = 2;
         this.orbitControls.maxDistance = 15;
         this.orbitControls.enablePan = false;            // DISABLED panning
@@ -75,31 +78,35 @@ export class Controls {
         console.log("- R: Reset camera view");
         console.log("- T: Toggle auto-rotation");
         console.log("- H: Show this help");
-    }
-
-    // ENABLED - Auto-rotation controls
+    }    // ENABLED - Auto-rotation controls (now controls model rotation instead of camera)
     toggleAutoRotate() {
-        this.isAutoRotating = !this.isAutoRotating;
-        this.orbitControls.autoRotate = this.isAutoRotating;
+        // Use ModelLoader's auto rotation instead of OrbitControls
+        if (this.modelLoader && this.modelLoader.toggleAutoRotation) {
+            this.isAutoRotating = this.modelLoader.toggleAutoRotation();
+        } else {
+            this.isAutoRotating = !this.isAutoRotating;
+        }
         
         // Provide visual feedback
-        if (this.isAutoRotating) {
-            this.orbitControls.autoRotateSpeed = this.rotationSpeed;
-            this.orbitControls.update();
-            console.log('Auto rotation enabled');
-        } else {
-            this.orbitControls.autoRotateSpeed = 0;
-            this.orbitControls.update();
-            console.log('Auto rotation disabled');
-        }
+        console.log('Auto rotation', this.isAutoRotating ? 'enabled' : 'disabled');
         return this.isAutoRotating;
     }
 
     setAutoRotateSpeed(speed) {
         this.rotationSpeed = speed;
-        this.orbitControls.autoRotateSpeed = speed;
-        this.orbitControls.autoRotate = speed > 0;
-        this.isAutoRotating = speed > 0;
+        
+        // Use ModelLoader's auto rotation instead of OrbitControls
+        if (this.modelLoader && this.modelLoader.setAutoRotationSpeed) {
+            this.modelLoader.setAutoRotationSpeed(speed);
+            if (speed > 0) {
+                this.modelLoader.enableAutoRotation();
+                this.isAutoRotating = true;
+            } else {
+                this.modelLoader.disableAutoRotation();
+                this.isAutoRotating = false;
+            }
+        }
+        
         console.log("Auto-rotation speed set to:", speed);
     }
 
@@ -133,9 +140,7 @@ export class Controls {
         this.camera.position.setFromSpherical(spherical).add(this.orbitControls.target);
         this.camera.lookAt(this.orbitControls.target);
         this.orbitControls.update();
-    }
-
-    resetView(currentIndex = 0) {
+    }    resetView(currentIndex = 0) {
         // Reset to optimal viewing position for centered models
         const targetPosition = new THREE.Vector3(0, 1, 0);
         const targetLookAt = new THREE.Vector3(0, 0, 0);
@@ -148,8 +153,13 @@ export class Controls {
         this.orbitControls.update();
         
         // Reset model rotations in ModelLoader
-        if (this.modelLoader && this.modelLoader.resetManualRotation) {
-            this.modelLoader.resetManualRotation();
+        if (this.modelLoader) {
+            if (this.modelLoader.resetManualRotation) {
+                this.modelLoader.resetManualRotation();
+            }
+            if (this.modelLoader.resetAutoRotation) {
+                this.modelLoader.resetAutoRotation();
+            }
         }
     }
 

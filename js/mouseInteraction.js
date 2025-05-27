@@ -166,7 +166,7 @@ export class MouseInteraction {
         if (!hintElement) return;
         
         if (this.modelLoader.manualRotation.isDragging) {
-            hintElement.textContent = 'Dragging to rotate...';
+            hintElement.textContent = 'Dragging...';
             hintElement.classList.add('visible');
         } else if (this.isHovering) {
             hintElement.textContent = 'Click and drag to rotate';

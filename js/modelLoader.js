@@ -39,8 +39,7 @@ export class ModelLoader {
             height: 8,
             targetOffset: new THREE.Vector3(0, 0, 0)
         };
-        
-        // Manual rotation configuration
+          // Manual rotation configuration
         this.manualRotation = {
             enabled: true,
             sensitivity: 0.05,
@@ -55,6 +54,12 @@ export class ModelLoader {
             targetRotationY: 0,
             currentRotationX: 0,
             currentRotationY: 0,
+            rotateActiveOnly: true  // Only rotate active model
+        };        // Auto rotation configuration (behaves like manual rotation)
+        this.autoRotation = {
+            enabled: true,  // Default enabled to match Controls
+            speed: 0.5,
+            direction: -1, // 1 for clockwise, -1 for counterclockwise
             rotateActiveOnly: true  // Only rotate active model
         };
         
@@ -216,8 +221,7 @@ export class ModelLoader {
     }
 
     async loadModel(item, index) {
-        return new Promise((resolve, reject) => {
-            this.modelStates[item.id] = {
+        return new Promise((resolve, reject) => {            this.modelStates[item.id] = {
                 modelObject: null,
                 targetOpacity: index === 0 ? 1 : 0,
                 currentOpacity: index === 0 ? 1 : 0,
@@ -230,6 +234,14 @@ export class ModelLoader {
                 manualRotation: {
                     rotationX: 0,
                     rotationY: 0,
+                    baseRotationX: (Math.random() - 0.5) * 0.2,
+                    baseRotationY: Math.random() * Math.PI * 2,
+                    baseRotationZ: (Math.random() - 0.5) * 0.2
+                },
+                // Auto rotation state (behaves like manual rotation)
+                autoRotation: {
+                    currentRotationX: 0,
+                    currentRotationY: 0,
                     baseRotationX: (Math.random() - 0.5) * 0.2,
                     baseRotationY: Math.random() * Math.PI * 2,
                     baseRotationZ: (Math.random() - 0.5) * 0.2
@@ -568,9 +580,7 @@ export class ModelLoader {
                 }
             });
         }
-    }
-
-    applyManualRotationToModel(modelId) {
+    }    applyManualRotationToModel(modelId) {
         const state = this.modelStates[modelId];
         if (!state || !state.modelObject) return;
         
@@ -580,6 +590,39 @@ export class ModelLoader {
         state.modelObject.rotation.x = manualRot.baseRotationX + this.manualRotation.currentRotationX;
         state.modelObject.rotation.y = manualRot.baseRotationY + this.manualRotation.currentRotationY;
         state.modelObject.rotation.z = manualRot.baseRotationZ;
+    }
+
+    // Auto rotation methods (behaves like manual rotation)
+    updateAutoRotation(delta) {
+        if (this.autoRotation.rotateActiveOnly) {
+            // Only rotate active model
+            if (this.activeModelId && this.modelStates[this.activeModelId]) {
+                this.applyAutoRotationToModel(this.activeModelId, delta);
+            }
+        } else {
+            // Rotate all visible models
+            Object.keys(this.modelStates).forEach(modelId => {
+                const state = this.modelStates[modelId];
+                if (state.visible) {
+                    this.applyAutoRotationToModel(modelId, delta);
+                }
+            });
+        }
+    }
+
+    applyAutoRotationToModel(modelId, delta) {
+        const state = this.modelStates[modelId];
+        if (!state || !state.modelObject) return;
+        
+        const autoRot = state.autoRotation;
+        
+        // Continuously rotate around Y axis (like manual rotation does)
+        autoRot.currentRotationY += this.autoRotation.speed * this.autoRotation.direction * delta;
+        
+        // Apply auto rotation on top of base rotation (similar to manual rotation)
+        state.modelObject.rotation.x = autoRot.baseRotationX;
+        state.modelObject.rotation.y = autoRot.baseRotationY + autoRot.currentRotationY;
+        state.modelObject.rotation.z = autoRot.baseRotationZ;
     }
 
     // Manual rotation control methods
@@ -604,9 +647,7 @@ export class ModelLoader {
     setRotationDampening(dampening) {
         this.manualRotation.dampening = Math.max(0.8, Math.min(0.99, dampening));
         console.log("Rotation dampening set to:", this.manualRotation.dampening);
-    }
-
-    resetManualRotation() {
+    }    resetManualRotation() {
         this.manualRotation.targetRotationX = 0;
         this.manualRotation.targetRotationY = 0;
         this.manualRotation.currentRotationX = 0;
@@ -614,6 +655,45 @@ export class ModelLoader {
         this.manualRotation.velocityX = 0;
         this.manualRotation.velocityY = 0;
         console.log("Manual rotation reset");
+    }
+
+    // Auto rotation control methods
+    enableAutoRotation() {
+        this.autoRotation.enabled = true;
+        console.log("Auto rotation enabled");
+    }
+
+    disableAutoRotation() {
+        this.autoRotation.enabled = false;
+        console.log("Auto rotation disabled");
+    }
+
+    toggleAutoRotation() {
+        this.autoRotation.enabled = !this.autoRotation.enabled;
+        console.log("Auto rotation", this.autoRotation.enabled ? "enabled" : "disabled");
+        return this.autoRotation.enabled;
+    }
+
+    setAutoRotationSpeed(speed) {
+        this.autoRotation.speed = Math.max(0, Math.min(5, speed)); // Clamp between 0 and 5
+        console.log("Auto rotation speed set to:", this.autoRotation.speed);
+    }
+
+    setAutoRotationDirection(direction) {
+        this.autoRotation.direction = direction > 0 ? 1 : -1;
+        console.log("Auto rotation direction set to:", this.autoRotation.direction > 0 ? "clockwise" : "counterclockwise");
+    }
+
+    resetAutoRotation() {
+        // Reset auto rotation for all models
+        Object.keys(this.modelStates).forEach(modelId => {
+            const state = this.modelStates[modelId];
+            if (state.autoRotation) {
+                state.autoRotation.currentRotationX = 0;
+                state.autoRotation.currentRotationY = 0;
+            }
+        });
+        console.log("Auto rotation reset for all models");
     }
 
     // Method to disable zoom in any existing controls
@@ -640,12 +720,15 @@ export class ModelLoader {
         } else {
             return isContentOnLeft ? this.modelXOffset : -this.modelXOffset;
         }
-    }
-
-    update(delta) {
+    }    update(delta) {
         // Update manual rotation
         if (this.manualRotation.enabled) {
             this.updateManualRotation(delta);
+        }
+
+        // Update auto rotation (behaves like manual rotation)
+        if (this.autoRotation.enabled && !this.manualRotation.isDragging) {
+            this.updateAutoRotation(delta);
         }
         
         // Update model animations and transitions

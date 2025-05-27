@@ -222,61 +222,23 @@ body {
     box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
 }
 
-/* Mouse Instructions Overlay */
-.mouse-instructions {
-    position: fixed;
-    bottom: 30px;
-    left: 30px;
-    z-index: 10;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(20px);
-    border-radius: 16px;
-    padding: 20px;
-    border: 1px solid var(--border-color);
-    opacity: 0;
-    transition: var(--transition-smooth);
-    transform: translateY(20px);
-}
-
-.mouse-instructions.visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.instruction-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
-    font-size: 0.9em;
-    color: var(--text-secondary);
-}
-
-.instruction-item:last-child {
-    margin-bottom: 0;
-}
-
-.instruction-icon {
-    font-size: 1.2em;
-    width: 24px;
-    text-align: center;
-}
-
 /* Model Info Display */
 .model-info {
     position: fixed;
-    top: 30px;
-    left: 30px;
+    top: 55px;
+    left: 20px;
     z-index: 10;
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
     border-radius: 16px;
-    padding: 20px;
+    padding: 5px;
     border: 1px solid var(--border-color);
-    max-width: 300px;
+    max-width: 85px;
     opacity: 0;
     transition: var(--transition-smooth);
     transform: translateY(-20px);
+    pointer-events: auto; /* Allow clicks on model info */
+    text-align: center;
 }
 
 .model-info.visible {

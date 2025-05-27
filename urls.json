@@ -1,89 +1,102 @@
 {
   "galleryItems": [
     {
+      "id": "goldenLogo",
+      "title": "לוגו מוזהב",
+      "description": "הלוגו שלי, עשוי זהב טהור.",
+      "imageUrl": "https://shaharportfolio.web.app/Logo.png",
+      "modelUrl": "https://shaharfullstack.github.io/gltfLoader/goldenLogo.glb",
+      "modelScale": [7, 7, 7],
+      "artist": "שחר מעוז",
+      "year": "2027",
+      "material": "זהב טהור",
+      "technique": "Gemini Tripo"
+    },
+    {
       "id": "guitarFace",
       "title": "פניגיטרה",
-      "description": "פיסול של פנים המשלבים גיטרה, המבטא את האהבה למוזיקה והאומנות. היצירה משקפת את הקשר בין המוזיקה לאומנות.",
+      "description": "פיסול שלי בשילוב גיטרה, היצירה מבטאת את האהבה למוזיקה ואומנות",
       "imageUrl": "https://shaharfullstack.github.io/gltfLoader/guitarFace.png",
       "modelUrl": "https://shaharfullstack.github.io/gltfLoader/guitarFace.glb",
       "modelScale": [7, 7, 7],
       "artist": "שחר מעוז",
       "year": "2025",
       "material": "Midjourney",
-      "technique": "Gemini on tripo"
+      "technique": "Gemini on Tripo"
     },
     {
       "id": "robo-head",
       "title": "ראש רובוטי",
-      "description": "פיסול של ראש רובוטי, המשלב אלמנטים של טכנולוגיה ואומנות. היצירה מבטאת את החיבור בין האדם למכונה.",
-      "imageUrl": "https://cdn.midjourney.com/dc275c54-18ca-40db-8a18-bea91f2adaa7/0_1.png",
+      "description": "פיסול של ראש רובוטי, שילוב אלמנטים של טכנולוגיה .",
+      "imageUrl": "https://cdn.midjourney.com/dc275c57-18ca-70db-8a18-bea91f2adaa7/0_1.png",
       "modelUrl": "https://shaharfullstack.github.io/gltfLoader/rooboHelm.glb",
       "modelScale": [7, 7, 7],
       "artist": "שחר מעוז",
       "year": "2025",
       "material": "Midjourney",
-      "technique": "Midjourney on tripo"
+      "technique": "Midjourney on Tripo"
     },
     {
       "id": "maskflower",
-      "title": "מסכת פרחים",
-      "description": "פיסול של מסכת פרחים, המשלבת אלמנטים של טבע ואומנות. היצירה מבטאת את הקשר בין האדם לטבע.",
+      "title": "פרחי מלחמה ",
+      "description": "ילד מחזיק פרח, רדיוס הפרח שווה לרדיוס המסיכה כביטוי לתמימות הילדים בתוך מלחמות של מבוגרים.",
       "imageUrl": "https://cdn.midjourney.com/3e6c43cd-98c5-41e2-8df2-1789506e30fd/0_3.png",
       "modelUrl": "https://shaharfullstack.github.io/gltfLoader/maskflower.glb",
       "modelScale": [7, 7, 7],
       "artist": "שחר מעוז",
       "year": "2025",
       "material": "Midjourney",
-      "technique": "Midjourney on tripo"
+      "technique": "Midjourney on Tripo"
     },
 
     {
       "id": "queenBird",
       "title": "מלכת הציפורים",
-      "description": "פיסול של ציפור מלכותית, המשלב אלמנטים של טבע ואומנות. היצירה מבטאת את החופש והיופי שבטבע.",
+      "description": "פיסול של ציפור מלכותית, שילוב אלמנטים של טבע ואומנות. ביטוי לחופש והיופי שבטבע.",
       "imageUrl": "https://shaharfullstack.github.io/gltfLoader/queenbird.png",
       "modelUrl": "https://shaharfullstack.github.io/gltfLoader/queenBird.glb",
       "modelScale": [7, 7, 7],
       "artist": "שחר מעוז",
       "year": "2025",
       "material": "Midjourney",
-      "technique": "Gemini on tripo"
+      "technique": "Gemini on Tripo"
     },
     {
       "id": "redGuitarist",
       "title": "גיטריסט אדום",
-      "description": "דיוקן עצמי,ביטוי התשוקה למוזיקה והאומנות.",
+      "description": "דיוקן עצמי,ביטוי התשוקה למוזיקה ואומנות והכאבים שמגיעים איתה.",
       "imageUrl": "https://shaharfullstack.github.io/gltfLoader/redGuitarist.png",
       "modelUrl": "https://shaharfullstack.github.io/gltfLoader/redGuitarist.glb",
       "modelScale": [7, 7, 7],
       "artist": "שחר מעוז",
       "year": "2025",
       "material": "Midjourney",
-      "technique": "Gemini on tripo"
+      "technique": "Gemini on Tripo"
     },
+
     {
       "id": "shaharHeb",
       "title": "שחר מעוז",
-      "description": "מאש לשם שלי",
+      "description": "זה אני",
       "imageUrl": "https://shaharfullstack.github.io/gltfLoader/ShaharHeb.png",
       "modelUrl": "https://shaharfullstack.github.io/gltfLoader/ShaharHeb.glb",
-      "modelScale": [4, 4, 4],
+      "modelScale": [7, 7, 7],
       "artist": "שחר מעוז",
       "year": "2025",
       "material": "Midjourney",
-      "technique": "Midjourney on tripo"
+      "technique": "Midjourney on Tripo"
     },
     {
-      "id": "shaharEng",
-      "title": "Sahar Maoz",
-      "description": "A sculpture of my name in English, combining elements of 3d art.",
-      "imageUrl": "https://shaharfullstack.github.io/gltfLoader/ShaharEng.png",
-      "modelUrl": "https://shaharfullstack.github.io/gltfLoader/ShaharEng.glb",
-      "modelScale": [4, 4, 4],
-      "artist": "שחר מעוז",
+      "id": "meCraft",
+      "title": "Shahar Maoz",
+      "description": "My Minecraft avatar, a playful representation of myself in the Minecraft universe.",
+      "imageUrl": "https://shaharfullstack.github.io/gltfLoader/meCraft.png",
+      "modelUrl": "https://shaharfullstack.github.io/gltfLoader/meCraft.glb",
+      "modelScale": [7, 7, 7],
+      "artist": "Shahar Maoz",
       "year": "2025",
-      "material": "Midjourney",
-      "technique": "Midjourney on tripo"
+      "material": "ChatGPT",
+      "technique": "ChatGPT on Trellis"
     },
     {
       "id": "lips",
@@ -95,19 +108,7 @@
       "artist": "שחר מעוז",
       "year": "2025",
       "material": "Midjourney",
-      "technique": "Gemini on tripo"
-    },
-    {
-      "id": "goldenLogo",
-      "title": "לוגו מוזהב",
-      "description": "פיסול של הלוגו שלי, עשוי זהב טהור. היצירה מבטאת את הערכים של יוקרה ואיכות המותג שלי.",
-      "imageUrl": "https://shaharportfolio.web.app/Logo.png",
-      "modelUrl": "https://shaharfullstack.github.io/gltfLoader/goldenLogo.glb",
-      "modelScale": [7, 7, 7],
-      "artist": "שחר מעוז",
-      "year": "2025",
-      "material": "זהב טהור",
-      "technique": "Gemini on ChatGPT on tripo"
+      "technique": "Midjourney on Tripo"
     },
     {
       "id": "my-logo-balloon",
@@ -119,22 +120,22 @@
       "artist": "שחר מעוז",
       "year": "2025",
       "material": "Midjourney",
-      "technique": "Gemini on ChatGPT on tripo"
+      "technique": "Gemini on ChatGPT on Tripo"
     }
   ],
   "defaultModel": "https://shaharfullstack.github.io/gltfLoader/ShaharHeb.glb",
   "settings": {
     "autoRotateSpeed": 2,
     "cameraDistance": 7,
-    "modelXOffset": 4,
+    "modelXOffset": 7,
     "lightingIntensity": {
-      "ambient": 0.4,
+      "ambient": 0.7,
       "main": 1.5,
       "fill": 0.5,
       "rim": 0.9
     },
     "spotlightConfig": {
-      "intensity": 4.0,
+      "intensity": 7.0,
       "distance": 30,
       "angle": 0.5,
       "penumbra": 0.3,

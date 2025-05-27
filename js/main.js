@@ -207,6 +207,7 @@ class Gallery3D {
             metadata.innerHTML = `
                 <span><strong>אמן:</strong> ${item.artist}</span>
                 <span><strong>שנה:</strong> ${item.year}</span>
+                <span><strong>טכניקה:</strong> ${item.technique}</span>
             `;
 
             // Assemble content
